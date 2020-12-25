@@ -85,6 +85,10 @@
       <artifactId>kafka-clients</artifactId>
       <version>${kafka.version}</version>
     </dependency>
+      <dependency>
+          <groupId>org.apache.flume.flume-ng-sources</groupId>
+          <artifactId>flume-taildir-source</artifactId>
+      </dependency>
 
   </dependencies>
 

@@ -20,11 +20,7 @@ package org.apache.flume.source.taildir;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
-import org.apache.flume.Channel;
-import org.apache.flume.ChannelSelector;
-import org.apache.flume.Context;
-import org.apache.flume.Event;
-import org.apache.flume.Transaction;
+import org.apache.flume.*;
 import org.apache.flume.channel.ChannelProcessor;
 import org.apache.flume.channel.MemoryChannel;
 import org.apache.flume.channel.ReplicatingChannelSelector;
@@ -41,12 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.flume.source.taildir.TaildirSourceConfigurationConstants.*;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class TestTaildirSource {
   static TaildirSource source;
@@ -102,7 +93,7 @@ public class TestTaildirSource {
     // Tail files that starts with c.log
     context.put(FILE_GROUPS_PREFIX + "c" + FILE_GROUPS_SUFFIX_DIR, tmpDir.getAbsolutePath());
     context.put(FILE_GROUPS_PREFIX + "c" + FILE_GROUPS_SUFFIX_FILE, "c.log.*");
-    context.put(IGNORE_HOUR_BEFORE,"20");
+    context.put(IGNORE_OLDER,"20h");
     Configurables.configure(source, context);
     source.start();
     source.process();
@@ -684,7 +675,7 @@ public class TestTaildirSource {
   }
 
   @Test
-  public void testignoreHourBefore() throws IOException, InterruptedException {
+  public void testignoreOlder() throws IOException {
     File f1 = new File(tmpDir, "file1");
     Files.write("file1line1\nfile1line2\n", f1, Charsets.UTF_8);
     f1.setLastModified(1602655978000L);
@@ -698,9 +689,7 @@ public class TestTaildirSource {
     context.put(FILE_GROUPS, "fg");
     context.put(FILE_GROUPS_PREFIX + "fg" + FILE_GROUPS_SUFFIX_DIR, tmpDir.getAbsolutePath());
     context.put(FILE_GROUPS_PREFIX + "fg" + FILE_GROUPS_SUFFIX_FILE, "file.*");
-    /*context.put(FILE_GROUPS_PREFIX + "f2" + FILE_GROUPS_SUFFIX_DIR, tmpDir.getAbsolutePath());
-    context.put(FILE_GROUPS_PREFIX + "f2" + FILE_GROUPS_SUFFIX_FILE, "file2$");*/
-    context.put(IGNORE_HOUR_BEFORE,"24");
+    context.put(IGNORE_OLDER,"24h");
     Configurables.configure(source, context);
     source.start();
     source.process();

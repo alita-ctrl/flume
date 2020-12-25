@@ -43,7 +43,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.apache.flume.source.taildir.TaildirSourceConfigurationConstants.*;
+import static org.apache.flume.source.taildir.TaildirSourceConfigurationConstants.FILE_GROUPS_SUFFIX_DIR;
+import static org.apache.flume.source.taildir.TaildirSourceConfigurationConstants.FILE_GROUPS_SUFFIX_FILE;
 
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
@@ -79,7 +80,8 @@ public class ReliableTaildirEventReader implements ReliableEventReader {
                                      boolean annotateFileName, String fileNameHeader,
                                      boolean multiline, String multilinePattern,
                                      String multilinePatternBelong, boolean multilinePatternMatched, long eventTimeoutSecs,
-                                     int multilineMaxBytes, boolean multilineMaxBytesTruncate, int multilineMaxLines, int ignoreHourBefore)
+                                     int multilineMaxBytes, boolean multilineMaxBytesTruncate, int multilineMaxLines,
+                                     String ignoreOlder)
           throws IOException {
     // Sanity checks
     Preconditions.checkNotNull(filePaths);
@@ -96,7 +98,7 @@ public class ReliableTaildirEventReader implements ReliableEventReader {
       Map<String, String> paths = filePaths.row(fg);
       String parentDir = paths.get(FILE_GROUPS_SUFFIX_DIR.substring(1));
       String filePath = paths.get(FILE_GROUPS_SUFFIX_FILE.substring(1));
-      taildirCache.add(new TaildirMatcher(fg, parentDir, filePath, cachePatternMatching, ignoreHourBefore));
+      taildirCache.add(new TaildirMatcher(fg, parentDir, filePath, cachePatternMatching, ignoreOlder));
     }
     logger.info("taildirCache: " + taildirCache.toString());
     logger.info("headerTable: " + headerTable.toString());
@@ -363,8 +365,7 @@ public class ReliableTaildirEventReader implements ReliableEventReader {
     private int multilineMaxBytes;
     private boolean multilineMaxBytesTruncate;
     private int multilineMaxLines;
-    private int ignoreHourBefore;
-
+    private String ignoreOlder;
     public Builder filePaths(Table<String, String, String> filePaths) {
       this.filePaths = filePaths;
       return this;
@@ -444,9 +445,8 @@ public class ReliableTaildirEventReader implements ReliableEventReader {
       this.multilineMaxLines = multilineMaxLines;
       return this;
     }
-
-    public Builder ignoreHourBefore(int ignoreHourBefore) {
-      this.ignoreHourBefore = ignoreHourBefore;
+    public Builder ignoreOlder(String ignoreOlder) {
+      this.ignoreOlder= ignoreOlder;
       return this;
     }
 
@@ -457,8 +457,8 @@ public class ReliableTaildirEventReader implements ReliableEventReader {
                                             multiline, multilinePattern,
                                             multilinePatternBelong, multilinePatternMatched,
                                             eventTimeoutSecs, multilineMaxBytes,
-                                            multilineMaxBytesTruncate, multilineMaxLines, ignoreHourBefore);
+                                            multilineMaxBytesTruncate, multilineMaxLines,
+                                            ignoreOlder);
     }
   }
-
 }

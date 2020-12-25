@@ -115,10 +115,10 @@ public class TaildirSourceConfigurationConstants {
   public static final int DEFAULT_MULTILINE_MAX_LINES = 500;
 
   /**
-   * 设置忽略多少小时之前的日志
-   * 默认是0，全部采集，没有时间限制
+   * if this value is set,files before the set time will be ignored
+   * Default value 0,all of files will be collection.
    */
-  public static final String IGNORE_HOUR_BEFORE = "ignoreHourBefore";
-  public static final int DEFAULT_IGNORE_HOUR_BEFORE = 0;
+  public static final String IGNORE_OLDER = "ignoreOlder";
+  public static final String DEFAULT_IGNORE_OLDER = "0" ;
 
 }

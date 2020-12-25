@@ -86,7 +86,7 @@ public class TaildirSource extends AbstractSource implements
   private int multilineMaxBytes;
   private boolean multilineMaxBytesTruncate;
   private int multilineMaxLines;
-  private int ignoreHourBefore;
+  private String ignoreOlder;
 
   @Override
   public synchronized void start() {
@@ -109,7 +109,7 @@ public class TaildirSource extends AbstractSource implements
           .multilineMaxBytes(multilineMaxBytes)
           .multilineMaxBytesTruncate(multilineMaxBytesTruncate)
           .multilineMaxLines(multilineMaxLines)
-          .ignoreHourBefore(ignoreHourBefore)
+          .ignoreOlder(ignoreOlder)
           .build();
     } catch (IOException e) {
       throw new FlumeException("Error instantiating ReliableTaildirEventReader", e);
@@ -206,7 +206,7 @@ public class TaildirSource extends AbstractSource implements
     multilineMaxBytes = context.getInteger(MULTILINE_MAX_BYTES, DEFAULT_MULTILINE_MAX_BYTES);
     multilineMaxBytesTruncate = context.getBoolean(MULTILINE_MAX_BYTES_TRUNCATE, DEFAULT_MULTILINE_MAX_BYTES_TRUNCATE);
     multilineMaxLines = context.getInteger(MULTILINE_MAX_LINES, DEFAULT_MULTILINE_MAX_LINES);
-    ignoreHourBefore = context.getInteger(IGNORE_HOUR_BEFORE,DEFAULT_IGNORE_HOUR_BEFORE);
+    ignoreOlder = context.getString(IGNORE_OLDER,DEFAULT_IGNORE_OLDER);
     if (sourceCounter == null) {
       sourceCounter = new SourceCounter(getName());
     }

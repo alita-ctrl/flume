@@ -32,6 +32,8 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
@@ -88,8 +90,8 @@ public class TaildirMatcher {
   private long lastCheckedTime = -1;
   // cached content, files which matched the pattern within the parent directory
   private List<File> lastMatchedFiles = Lists.newArrayList();
-  // hour from configuration
-  private final int ignoreHourBefore;
+  // time from configuration
+  private final String ignoreOlder;
 
   /**
    * Package accessible constructor. From configuration context it represents a single
@@ -114,7 +116,7 @@ public class TaildirMatcher {
    * @see TaildirSourceConfigurationConstants
    */
   TaildirMatcher(String fileGroup, String dirPath, String filePath,
-                 boolean cachePatternMatching,int ignoreHourBefore) {
+                 boolean cachePatternMatching,String ignoreOlder) {
     // store whatever came from configuration
     this.fileGroup = fileGroup;
     File f = new File(dirPath + File.separator + filePath);
@@ -122,7 +124,7 @@ public class TaildirMatcher {
     this.cachePatternMatching = cachePatternMatching;
     this.parentDir = new File(dirPath);
     this.fileMatcher = FS.getPathMatcher("regex:" + filePattern);
-    this.ignoreHourBefore = ignoreHourBefore;
+    this.ignoreOlder = ignoreOlder;
     try {
       // sanity check
       Preconditions.checkState(parentDir.exists(),
@@ -221,7 +223,7 @@ public class TaildirMatcher {
           @Override
           public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
             if (fileMatcher.matches(file.toAbsolutePath())) {
-              if (file.toFile().lastModified() >= getDateMs()) {
+              if (file.toFile().lastModified() >= IgnoreOlderConversionToTimestamp()) {
                 result.add(file.toFile());
               }
             }
@@ -262,17 +264,49 @@ public class TaildirMatcher {
     });
     return files;
   }
-  //diy 获取配置文件中指定的多少小时之前的时间戳
-  public Long getDateMs(){
+  //get the timestamp hours ago
+  public Long getTimestampBeforeSpecifiedHour(int hour){
     Calendar calendar = Calendar.getInstance();
-    calendar.set(Calendar.HOUR_OF_DAY,calendar.get(Calendar.HOUR_OF_DAY)-this.ignoreHourBefore);
-    Long ignoreHourtoMillis = calendar.getTimeInMillis();
+    calendar.set(Calendar.HOUR_OF_DAY,calendar.get(Calendar.HOUR_OF_DAY)-hour);
+    Long timestampFromHoursago = calendar.getTimeInMillis();
     logger.debug(
-            "the timestamp from"+ignoreHourBefore+"hours ago was"+ignoreHourtoMillis
+            "the timestamp "+hour+"hours ago was"+timestampFromHoursago
     );
-    return ignoreHourtoMillis;
+    return timestampFromHoursago;
   }
-
+  //get the timestamp minute ago
+  public Long getTimestampBeforeSpecifiedMinute(int minute){
+    Calendar calendar = Calendar.getInstance();
+    calendar.set(Calendar.MINUTE,calendar.get(Calendar.MINUTE)-minute);
+    Long timestampFromMinutesago = calendar.getTimeInMillis();
+    logger.debug(
+            "the timestamp "+minute+"minute ago was"+timestampFromMinutesago
+    );
+    return timestampFromMinutesago;
+  }
+  //Decide whether its the end of the hour or end of the minute And get the corresponding timestamp;
+  public Long IgnoreOlderConversionToTimestamp(){
+    Pattern pattern = Pattern.compile("^[1-9][0-9]+(h|m)$");
+    Matcher mat = pattern.matcher(ignoreOlder);
+    if (mat.matches()){
+      String[] older = ignoreOlder.split("[0-9]+",2);
+      if (older[1].equals("h")){
+        return getTimestampBeforeSpecifiedHour(getAcquisitionTime());
+      }
+      if (older[1].equals("m")){
+        return getTimestampBeforeSpecifiedMinute(getAcquisitionTime());
+      }
+      logger.info(ignoreOlder+"is out of order,please check the format for example 24h or 5m");
+    }
+    return 0L;
+  }
+  //get Acquisition Time Segment of ignoreOlder
+  public int getAcquisitionTime(){
+    String[] older1 = ignoreOlder.split("\\D+",2);
+    String olderS = older1[0];
+    int olderN = Integer.parseInt(olderS);
+    return olderN;
+  }
   @Override
   public String toString() {
     return "{" +

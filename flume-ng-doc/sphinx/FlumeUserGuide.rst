@@ -1193,6 +1193,8 @@ multilineMatched                    true                           Whether to ma
 multilineEventTimeoutSeconds        0                              Maximum seconds before an event automatically be flushed. Default value 0 means never time out.
 multilineMaxBytes                   10485760                       If the length of multiline event bytes exceeds this value, the event will be flushed. Default value 10MB. It's used in combination multilineMaxLines.
 multilineMaxLines                   500                            If the lines of multiline event exceeds this value, the event will be flushed. Default value 500. It's used in combination multilineMaxBytes.
+
+ignoreOlder                         0                              If this value is set,log collection will ignore logs prior to the specified time.The units are h or m.
 =================================== ============================== ===================================================
 
 Example for agent named a1:
@@ -1221,6 +1223,7 @@ Example for agent named a1:
   a1.sources.r1.multilineMaxBytes = 10485760
   a1.sources.r1.multilineMaxLines = 500
 
+  a1.sources.r1.ignoreOlder = 24h
 
 Twitter 1% firehose Source (experimental)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -19,22 +19,15 @@
 package org.apache.flume.sink.kafka;
 
 import com.google.common.base.Charsets;
-
 import kafka.admin.AdminUtils;
 import kafka.message.MessageAndMetadata;
 import kafka.utils.ZkUtils;
-
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.avro.util.Utf8;
 import org.apache.commons.lang.RandomStringUtils;
-import org.apache.flume.Channel;
-import org.apache.flume.Context;
-import org.apache.flume.Event;
-import org.apache.flume.EventDeliveryException;
-import org.apache.flume.Sink;
-import org.apache.flume.Transaction;
+import org.apache.flume.*;
 import org.apache.flume.channel.MemoryChannel;
 import org.apache.flume.conf.Configurables;
 import org.apache.flume.event.EventBuilder;
@@ -53,28 +46,10 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
-import static org.apache.flume.sink.kafka.KafkaSinkConstants.AVRO_EVENT;
-import static org.apache.flume.sink.kafka.KafkaSinkConstants.BATCH_SIZE;
-import static org.apache.flume.sink.kafka.KafkaSinkConstants.BOOTSTRAP_SERVERS_CONFIG;
-import static org.apache.flume.sink.kafka.KafkaSinkConstants.BROKER_LIST_FLUME_KEY;
-import static org.apache.flume.sink.kafka.KafkaSinkConstants.DEFAULT_KEY_SERIALIZER;
-import static org.apache.flume.sink.kafka.KafkaSinkConstants.DEFAULT_TOPIC;
-import static org.apache.flume.sink.kafka.KafkaSinkConstants.KAFKA_PREFIX;
-import static org.apache.flume.sink.kafka.KafkaSinkConstants.KAFKA_PRODUCER_PREFIX;
-import static org.apache.flume.sink.kafka.KafkaSinkConstants.OLD_BATCH_SIZE;
-import static org.apache.flume.sink.kafka.KafkaSinkConstants.REQUIRED_ACKS_FLUME_KEY;
-import static org.apache.flume.sink.kafka.KafkaSinkConstants.TOPIC_CONFIG;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.apache.flume.sink.kafka.KafkaSinkConstants.*;
+import static org.junit.Assert.*;
 
 /**
  * Unit tests for Kafka Sink
@@ -108,7 +83,7 @@ public class TestKafkaSink {
     context.put(KAFKA_PRODUCER_PREFIX + ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
                 "override.default.serializer");
     context.put("kafka.producer.fake.property", "kafka.property.value");
-    context.put("kafka.bootstrap.servers", "localhost:9092,localhost:9092");
+    context.put("kafka.bootstrap.servers", "bint:9092,localhost:9092");
     context.put("brokerList", "real-broker-list");
     Configurables.configure(kafkaSink, context);
 
@@ -573,6 +548,25 @@ public class TestKafkaSink {
       }
     }
     return newTopic;
+  }
+
+  public void testkafkasink() {
+    KafkaSink kafkaSink = new KafkaSink();
+    Context context = new Context();
+    context.put("topic", "test-topic");
+    context.put(OLD_BATCH_SIZE, "300");
+    context.put(BROKER_LIST_FLUME_KEY, "localhost:9092");
+    context.put(REQUIRED_ACKS_FLUME_KEY, "1");
+    Configurables.configure(kafkaSink, context);
+
+    Properties kafkaProps = kafkaSink.getKafkaProps();
+
+    assertEquals(kafkaSink.getTopic(), "test-topic");
+    assertEquals(kafkaSink.getBatchSize(), 300);
+    assertEquals(kafkaProps.getProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG),
+            "localhost:9092,localhost:9092");
+    assertEquals(kafkaProps.getProperty(ProducerConfig.ACKS_CONFIG), "1");
+
   }
 
 }
