@@ -549,24 +549,4 @@ public class TestKafkaSink {
     }
     return newTopic;
   }
-
-  public void testkafkasink() {
-    KafkaSink kafkaSink = new KafkaSink();
-    Context context = new Context();
-    context.put("topic", "test-topic");
-    context.put(OLD_BATCH_SIZE, "300");
-    context.put(BROKER_LIST_FLUME_KEY, "localhost:9092");
-    context.put(REQUIRED_ACKS_FLUME_KEY, "1");
-    Configurables.configure(kafkaSink, context);
-
-    Properties kafkaProps = kafkaSink.getKafkaProps();
-
-    assertEquals(kafkaSink.getTopic(), "test-topic");
-    assertEquals(kafkaSink.getBatchSize(), 300);
-    assertEquals(kafkaProps.getProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG),
-            "localhost:9092,localhost:9092");
-    assertEquals(kafkaProps.getProperty(ProducerConfig.ACKS_CONFIG), "1");
-
-  }
-
 }

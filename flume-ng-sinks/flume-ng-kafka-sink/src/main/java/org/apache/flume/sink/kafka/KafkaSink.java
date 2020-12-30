@@ -211,8 +211,6 @@ public class KafkaSink extends AbstractSink implements Configurable {
       String errorMsg = "Failed to publish events";
       logger.error("Failed to publish events", ex);
       result = Status.BACKOFF;
-      TaildirSource ts = new TaildirSource();
-      ts.stop();
       if (transaction != null) {
         try {
           kafkaFutures.clear();
